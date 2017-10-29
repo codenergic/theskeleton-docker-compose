@@ -1,0 +1,23 @@
+version: '3'
+services:
+  server:
+    container_name: theskeleton-server
+    image: codenergic/theskeleton:latest
+    ports:
+      - 8080:8080
+    environment:
+      S3_CLIENT_ENDPOINT: http://s3:9000
+      SPRING_DATASOURCE_URL: jdbc:h2:/data/db/theskeleton
+    volumes:
+      - ~/.theskeleton/db:/data/db
+  s3:
+    container_name: theskeleton-s3
+    image: minio/minio
+    expose:
+      - 9000
+    environment:
+      MINIO_ACCESS_KEY: supersecret
+      MINIO_SECRET_KEY: supersecret123
+    command: server /data
+    volumes:
+      - ~/.theskeleton/data:/data
