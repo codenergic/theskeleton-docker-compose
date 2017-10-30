@@ -8,6 +8,8 @@ services:
     environment:
       S3_CLIENT_ENDPOINT: http://s3:9000
       SPRING_DATASOURCE_URL: jdbc:h2:/data/db/theskeleton
+    depends_on:
+      - s3
     volumes:
       - data:/data
   s3:
