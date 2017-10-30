@@ -9,7 +9,7 @@ services:
       S3_CLIENT_ENDPOINT: http://s3:9000
       SPRING_DATASOURCE_URL: jdbc:h2:/data/db/theskeleton
     volumes:
-      - ~/.theskeleton/db:/data/db
+      - data:/data
   s3:
     container_name: theskeleton-s3
     image: minio/minio
@@ -18,6 +18,8 @@ services:
     environment:
       MINIO_ACCESS_KEY: supersecret
       MINIO_SECRET_KEY: supersecret123
-    command: server /data
+    command: server /data/files
     volumes:
-      - ~/.theskeleton/data:/data
+      - data:/data
+volumes:
+  data:
