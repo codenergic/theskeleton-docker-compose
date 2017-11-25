@@ -1,5 +1,16 @@
 version: '3'
 services:
+  ui:
+    container_name: theskeleton-ui-admin
+    image: codenergic/theskeleton-ui-admin:latest
+    ports:
+      - 9000:9000
+    environment:
+      PORT: 9000
+      PUBLIC_PATH:
+      SERVER_URL: http://localhost:8080
+    depends_on:
+      - server
   server:
     container_name: theskeleton-server
     image: codenergic/theskeleton:latest
@@ -15,6 +26,8 @@ services:
   s3:
     container_name: theskeleton-s3
     image: minio/minio
+    ports:
+      - 9001:9000
     expose:
       - 9000
     environment:
