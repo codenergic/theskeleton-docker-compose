@@ -4,7 +4,7 @@ services:
     container_name: theskeleton-ui-admin
     image: codenergic/theskeleton-ui-admin:latest
     ports:
-      - 9000:9000
+      - 9000:9000 # http://localhost:9000
     environment:
       PORT: 9000
       PUBLIC_PATH:
@@ -15,19 +15,45 @@ services:
     container_name: theskeleton-server
     image: codenergic/theskeleton:latest
     ports:
-      - 8080:8080
+      - 8080:8080 # http://localhost:8080
     environment:
-      S3_CLIENT_ENDPOINT: http://s3:9000
-      SPRING_DATASOURCE_URL: jdbc:h2:/data/db/theskeleton
+      EMAIL_BASEURL: http://localhost:8080
+      LOGGING_FILE: /var/log/theskeleton/server.log
+      S3_CLIENT_ENDPOINT: http://theskeleton-s3:9000
+      SPRING_DATASOURCE_URL: jdbc:mariadb://theskeleton-db:3306/theskeleton
+      SPRING_DATASOURCE_USERNAME: theskeleton
+      SPRING_DATASOURCE_PASSWORD: theskeletondbsupersecret123
+      SPRING_MAIL_HOST: theskeleton-smtp
+      SPRING_MAIL_PORT: 25
+      SPRING_MAIL_USERNAME: admin
+      SPRING_MAIL_PASSWORD: admin
+      SPRING_MAIL_PROPERTIES_SENDER: noreply@localhost
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: 'false'
     depends_on:
+      - db
       - s3
+      - smtp
     volumes:
-      - data:/data
+      - theskeleton-log:/var/log/theskeleton
+  db:
+    container_name: theskeleton-db
+    image: mariadb:latest
+    ports:
+      - 3307:3306 # tcp://localhost:3307
+    expose:
+      - 3306
+    environment:
+      MYSQL_DATABASE: theskeleton
+      MYSQL_USER: theskeleton
+      MYSQL_PASSWORD: theskeletondbsupersecret123
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+    volumes:
+      - theskeleton-db:/var/lib/mysql
   s3:
     container_name: theskeleton-s3
     image: minio/minio
     ports:
-      - 9001:9000
+      - 9001:9000 # http://localhost:9001
     expose:
       - 9000
     environment:
@@ -35,6 +61,22 @@ services:
       MINIO_SECRET_KEY: supersecret123
     command: server /data/files
     volumes:
-      - data:/data
+      - theskeleton-s3:/data
+  smtp: # for testing purpose
+    container_name: theskeleton-smtp
+    image: tophfr/mailcatcher
+    ports:
+      - 1080:80 # http://localhost:1080
+    expose:
+      - 25
+  db-ui: # for testing purpose
+    container_name: theskeleton-db-ui
+    image: adminer
+    ports:
+      - 9002:8080 # http://localhost:9002
+    depends_on:
+      - db
 volumes:
-  data:
+  theskeleton-db:
+  theskeleton-log:
+  theskeleton-s3:
