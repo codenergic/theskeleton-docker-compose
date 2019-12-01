@@ -1,7 +1,6 @@
 version: '3'
 services:
   ui:
-    container_name: theskeleton-ui-admin
     image: codenergic/theskeleton-ui-admin:latest
     ports:
       - 9000:9000 # http://localhost:9000
@@ -12,18 +11,17 @@ services:
     depends_on:
       - server
   server:
-    container_name: theskeleton-server
     image: codenergic/theskeleton:latest
     ports:
       - 8080:8080 # http://localhost:8080
     environment:
       EMAIL_BASEURL: http://localhost:8080
       LOGGING_FILE: /var/log/theskeleton/server.log
-      S3_CLIENT_ENDPOINT: http://theskeleton-s3:9000
-      SPRING_DATASOURCE_URL: jdbc:mariadb://theskeleton-db:3306/theskeleton
+      S3_CLIENT_ENDPOINT: http://s3:9000
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/theskeleton
       SPRING_DATASOURCE_USERNAME: theskeleton
       SPRING_DATASOURCE_PASSWORD: theskeletondbsupersecret123
-      SPRING_MAIL_HOST: theskeleton-smtp
+      SPRING_MAIL_HOST: smtp
       SPRING_MAIL_PORT: 25
       SPRING_MAIL_USERNAME: admin
       SPRING_MAIL_PASSWORD: admin
@@ -34,9 +32,8 @@ services:
       - s3
       - smtp
     volumes:
-      - theskeleton-log:/var/log/theskeleton
+      - log:/var/log/theskeleton
   db:
-    container_name: theskeleton-db
     image: mariadb:latest
     ports:
       - 3307:3306 # tcp://localhost:3307
@@ -48,9 +45,8 @@ services:
       MYSQL_PASSWORD: theskeletondbsupersecret123
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
     volumes:
-      - theskeleton-db:/var/lib/mysql
+      - db:/var/lib/mysql
   s3:
-    container_name: theskeleton-s3
     image: minio/minio
     ports:
       - 9001:9000 # http://localhost:9001
@@ -61,22 +57,20 @@ services:
       MINIO_SECRET_KEY: supersecret123
     command: server /data/files
     volumes:
-      - theskeleton-s3:/data
+      - s3:/data
   smtp: # for testing purpose
-    container_name: theskeleton-smtp
     image: tophfr/mailcatcher
     ports:
       - 1080:80 # http://localhost:1080
     expose:
       - 25
   db-ui: # for testing purpose
-    container_name: theskeleton-db-ui
     image: adminer
     ports:
       - 9002:8080 # http://localhost:9002
     depends_on:
       - db
 volumes:
-  theskeleton-db:
-  theskeleton-log:
-  theskeleton-s3:
+  db:
+  log:
+  s3:
